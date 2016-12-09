@@ -28,12 +28,36 @@ app.post('/login', function(req, res, next) {
   .then( function(foundUser) {
     if (foundUser) {
       req.session.userId = foundUser.id
+      console.log('LOGIN session data', req.session);
       res.sendStatus(204)
     } else {
       res.sendStatus(401)
     }
   })
   .catch(next)
+})
+
+app.post('/signUp', function(req, res, next) {
+  User.findOrCreate({
+    where: req.body
+  })
+  .spread( function(foundOrCreatedUser, created) {
+      if (created){
+        req.session.userId = foundOrCreatedUser.id
+        res.sendStatus(204)
+      }
+      else {
+        res.status(401).send('User already created')
+      }
+
+  })
+  .catch(next)
+})
+
+app.get('/logout', function(req, res, next) {
+    delete req.session;
+    console.log('LOGOUT session data', req.session);
+    res.redirect('https://http.cat/305', 204)
 })
 
 var validFrontendRoutes = ['/', '/stories', '/users', '/stories/:id', '/users/:id', '/signup', '/login'];
